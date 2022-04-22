@@ -16,7 +16,7 @@ export async function GetRoomMessage(id) {
     room.players = JSON.parse(room.players);
 
     let message =  `Кто будет крутить колесо? [Предложил <@${room.host_id}>]`;
-    message += `\nКолесо находится по ссылке: ${process.env.FRONTEND_URL}/${id}`;
+    message += `\nКолесо находится по ссылке: ${process.env.FRONTEND_URL}/#${id}`;
     let playersString = "";
     for (let i = 0; i < room.players.length; ++i) {
         if (i === room.players.length - 1) {
