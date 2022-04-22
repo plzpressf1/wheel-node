@@ -9,6 +9,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
+  "engines": {
+    "node": "16.x"
+  },
   "devDependencies": {
     "nodemon": "^2.0.15"
   },
