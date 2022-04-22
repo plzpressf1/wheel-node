@@ -16,7 +16,7 @@ import {
     HasGuildCommands
 } from "./commands.js";
 
-import { AddWheelPlayer, CreateWheel, GetWheelMessage } from "./wheel.js";
+import { AddRoomPlayer, CreateRoom, GetRoomMessage } from "./wheel.js";
 import { SetupWS } from "./ws.js";
 
 // Create an express app
@@ -76,8 +76,8 @@ app.post("/interactions", async function (req, res) {
             const userId = req.body.member.user.id;
             const wheelId = req.body.id;
 
-            await CreateWheel(wheelId, userId);
-            const wheelMessage = await GetWheelMessage(wheelId);
+            await CreateRoom(wheelId, userId);
+            const wheelMessage = await GetRoomMessage(wheelId);
 
             // Send a message into the channel where command was triggered from
             return res.send({
@@ -116,8 +116,8 @@ app.post("/interactions", async function (req, res) {
         if (componentId.startsWith("accept_button_")) {
             // get the associated wheel ID
             const wheelId = componentId.replace("accept_button_", "");
-            await AddWheelPlayer(wheelId, userId);
-            const wheelMessage = await GetWheelMessage(wheelId);
+            await AddRoomPlayer(wheelId, userId);
+            const wheelMessage = await GetRoomMessage(wheelId);
 
             try {
                 await res.send({

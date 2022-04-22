@@ -2,35 +2,35 @@ import fetch from "node-fetch";
 
 const api = process.env.REMOTE_ENDPOINT + "/scripts";
 
-export async function CreateWheel(id, hostId) {
-    const url = `${api}/wheels.php?action=create_wheel&id=${id}&hostId=${hostId}`;
+export async function CreateRoom(id, hostId) {
+    const url = `${api}/rooms.php?action=create_room&id=${id}&hostId=${hostId}`;
     await fetch(url);
 }
 
-export async function GetWheelMessage(id) {
-    const url = `${api}/wheels.php?action=get_wheel&id=${id}`;
+export async function GetRoomMessage(id) {
+    const url = `${api}/rooms.php?action=get_room&id=${id}`;
     const res = await fetch(url);
     const json = await res.json();
-    const wheel = json.wheel;
+    const room = json.room;
 
-    wheel.players = JSON.parse(wheel.players);
+    room.players = JSON.parse(room.players);
 
-    let message =  `Кто будет крутить колесо? [Предложил <@${wheel.host_id}>]`;
+    let message =  `Кто будет крутить колесо? [Предложил <@${room.host_id}>]`;
     message += `\nКолесо находится по ссылке: ${process.env.FRONTEND_URL}/${id}`;
     let playersString = "";
-    for (let i = 0; i < wheel.players.length; ++i) {
-        if (i === wheel.players.length - 1) {
+    for (let i = 0; i < room.players.length; ++i) {
+        if (i === room.players.length - 1) {
             if (i > 0) playersString += " и ";
         }
         else if (i > 0) {
             playersString += ", ";
         }
 
-        playersString += `<@${wheel.players[i]}>`;
+        playersString += `<@${room.players[i]}>`;
     }
-    if (wheel.players.length > 0) {
+    if (room.players.length > 0) {
         message += `\n${playersString}`;
-        if (wheel.players.length > 1) {
+        if (room.players.length > 1) {
             message += ` будут крутить колесо`;
         }
         else {
@@ -40,7 +40,7 @@ export async function GetWheelMessage(id) {
     return message;
 }
 
-export async function AddWheelPlayer(id, player) {
-    const url = `${api}/wheels.php?action=add_player&id=${id}&player=${player}`;
+export async function AddRoomPlayer(id, player) {
+    const url = `${api}/rooms.php?action=add_player&id=${id}&player=${player}`;
     await fetch(url);
 }
