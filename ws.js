@@ -152,8 +152,6 @@ class Room {
 const rooms = new Map();
 
 export function SetupWS(io) {
-    io.listen(process.env.WS_PORT);
-
     io.on("connection", async socket => {
         const roomId = socket.handshake.query.roomId;
         const user = {

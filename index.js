@@ -150,7 +150,7 @@ app.post("/interactions", async function (req, res) {
     }
 });
 
-app.listen(process.env.PORT, async () => {
+server.listen(process.env.PORT, async () => {
     console.log(`Listening on port ${process.env.PORT}`);
 
     // Check if guild commands from commands.json are installed (if not, install them)
