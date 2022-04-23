@@ -59,6 +59,10 @@ class Room {
         this.wheel = new Wheel();
     }
 
+    updateRegisteredPlayers(registeredPlayers) {
+        this.registeredPlayers = registeredPlayers;
+    }
+
     connectPlayer(player, socket) {
         if (this.registeredPlayers.includes(player.id)) {
             this.players.set(player.id, new Player(player, socket));
@@ -168,17 +172,22 @@ export function SetupWS(io) {
             const res = await fetch(url);
             const json = await res.json();
             const room = json.room;
-            const registeredPlayers = JSON.parse(room.players);
 
-            let roomInstance = rooms.get(room.id);
-            if (!roomInstance) {
-                roomInstance = new Room(room.id, room.host_id, registeredPlayers);
-                rooms.set(room.id, roomInstance);
+            if (room) {
+                const registeredPlayers = JSON.parse(room.players);
+
+                let roomInstance = rooms.get(room.id);
+                if (!roomInstance) {
+                    roomInstance = new Room(room.id, room.host_id, registeredPlayers);
+                    rooms.set(room.id, roomInstance);
+                }
+                else {
+                    roomInstance.updateRegisteredPlayers(registeredPlayers);
+                }
+                roomInstance.connectPlayer(user, socket);
+                // socket session data
+                socket.userData = { user, room: roomInstance };
             }
-            roomInstance.connectPlayer(user, socket);
-
-            // socket session data
-            socket.userData = { user, room: roomInstance };
         }
         catch (e) {
             console.error("invalid token, error:", e);
@@ -186,20 +195,20 @@ export function SetupWS(io) {
         }
 
         socket.on("disconnect", () => {
-            console.log("session disconnected. user, room:", socket.userData.user.id, socket.userData.room.id);
-            socket.userData.room.disconnectPlayer(socket.userData.user.id);
+            console.log("session disconnected. user, room:", socket.userData?.user.id, socket.userData?.room.id);
+            socket.userData?.room.disconnectPlayer(socket.userData?.user.id);
         });
 
         socket.on("players/toggle", (player) => {
-            socket.userData.room.togglePlayer(player);
+            socket.userData?.room.togglePlayer(player);
         });
 
         socket.on("filter/change", (filter) => {
-            socket.userData.room.changeWheelFilter(filter);
+            socket.userData?.room.changeWheelFilter(filter);
         });
 
         socket.on("wheel/spin", () => {
-            socket.userData.room.spinWheel();
+            socket.userData?.room.spinWheel();
         });
     });
 }
