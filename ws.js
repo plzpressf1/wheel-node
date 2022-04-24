@@ -15,6 +15,7 @@ class Wheel {
 
     getCurrentItem() {
         const ratio = Math.abs(this.angle % (Math.PI * 2) / (Math.PI * 2));
+
         let i = 0;
         let sumPiece = 0, prevPiece = 0;
         for (const item of this.items) {
@@ -66,20 +67,40 @@ class Wheel {
         return false;
     }
 
+    getItemsExceptId(items, id) {
+        const newItems = [];
+        for (const item of items) {
+            if (item.id !== id) {
+                newItems.push(item);
+            }
+        }
+        return newItems;
+    }
+
+    calcProbabilities() {
+        let totalWeights = 0;
+        for (const item of this.items) {
+            totalWeights += item.weight;
+        }
+        for (const item of this.items) {
+            item.probability = item.weight / totalWeights;
+        }
+    }
+
     banItem(item) {
         if (!this.findItemById(this.bannedItems, item.id)) {
             this.bannedItems.push(item);
+            this.items = this.getItemsExceptId(this.items, item.id);
+            this.calcProbabilities();
         }
     }
 
     unbanItem(item) {
-        const newBannedItems = [];
-        for (const bannedItem of this.bannedItems) {
-            if (bannedItem.id !== item.id) {
-                newBannedItems.push(bannedItem);
-            }
+        if (this.findItemById(this.bannedItems, item.id)) {
+            this.items.push(item);
+            this.bannedItems = this.getItemsExceptId(this.bannedItems, item.id);
+            this.calcProbabilities();
         }
-        this.bannedItems = newBannedItems;
     }
 }
 
@@ -194,20 +215,8 @@ class Room {
     }
 
     sendWheelSetup() {
-        let totalWeights = 0;
-        const items = [];
-        for (const item of this.wheel.items) {
-            if (!this.wheel.findItemById(this.wheel.bannedItems, item.id)) {
-                items.push(item);
-                totalWeights += item.weight;
-            }
-        }
-        for (const item of items) {
-            item.probability = item.weight / totalWeights;
-        }
-
         this.emitToAll("wheel/setup", {
-            items,
+            items: this.wheel.items,
             bannedItems: this.wheel.bannedItems,
         });
     }
