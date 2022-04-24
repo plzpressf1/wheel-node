@@ -44,3 +44,22 @@ export async function AddRoomPlayer(id, player) {
     const url = `${api}/rooms.php?action=add_player&id=${id}&player=${player}`;
     await fetch(url);
 }
+
+export function GetWheelResultMessage(wheel) {
+    const currentItem = wheel.getCurrentItem();
+    let message = "Колесо прокручено:\n";
+    let isFirst = true;
+    for (const item of wheel.items) {
+        if (isFirst) {
+            isFirst = false;
+        }
+        else {
+            message += "\n";
+        }
+        message += item.name;
+        if (currentItem.name === item.name) {
+            message += " <-";
+        }
+    }
+    return message;
+}

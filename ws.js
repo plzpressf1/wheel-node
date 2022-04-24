@@ -1,5 +1,8 @@
 import fetch from "node-fetch";
+import { Client, Intents } from "discord.js";
+import { GetWheelResultMessage } from "./wheel.js";
 
+const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 const api = process.env.REMOTE_ENDPOINT + "/scripts";
 
 class Wheel {
@@ -7,6 +10,21 @@ class Wheel {
         this.angle = 0;
         this.isRolling = false;
         this.items = [];
+    }
+
+    getCurrentItem() {
+        const ratio = Math.abs(this.angle % (Math.PI * 2) / (Math.PI * 2));
+        let i = 0;
+        let sumPiece = 0, prevPiece = 0;
+        for (const item of this.items) {
+            sumPiece += item.probability;
+            if (ratio >= prevPiece && ratio < sumPiece) {
+                break;
+            }
+            prevPiece = item.probability;
+            i++;
+        }
+        return this.items[i];
     }
 
     async fetchItems(filter) {
@@ -113,6 +131,10 @@ class Room {
             this.wheel.isRolling = false;
             clearInterval(this.interval);
             this.emitToAll("wheel/rolling", false);
+
+            const channel = client.channels.cache.find(channel => channel.name === process.env.CHANNEL_NAME);
+            const message = GetWheelResultMessage(this.wheel);
+            channel.send(message);
         }
         this.emitToAll("wheel/angle", this.wheel.angle);
     }
@@ -156,6 +178,13 @@ class Room {
 const rooms = new Map();
 
 export function SetupWS(io) {
+    client.on("ready", () => {
+        console.log(`Logged in as ${client.user.tag}!`);
+    });
+
+    // Login to Discord with your client's token
+    client.login(process.env.DISCORD_TOKEN);
+
     io.on("connection", async socket => {
         const roomId = socket.handshake.query.roomId;
         const user = {
