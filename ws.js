@@ -156,9 +156,11 @@ class Room {
             clearInterval(this.interval);
             this.emitToAll("wheel/rolling", false);
 
-            const channel = client.channels.cache.find(channel => channel.name === process.env.CHANNEL_NAME);
+            const channel = client.channels.cache.find(
+                channel => channel.name === process.env.CHANNEL_NAME && channel.guild.name === process.env.GUILD_NAME
+            );
             const message = GetWheelResultMessage(this.wheel);
-            channel.send(message);
+            channel?.send(message);
         }
         this.emitToAll("wheel/angle", this.wheel.angle);
     }
@@ -233,6 +235,10 @@ const rooms = new Map();
 export function SetupWS(io) {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}!`);
+        const channel = client.channels.cache.find(
+            channel => channel.name === process.env.CHANNEL_NAME && channel.guild.name === process.env.GUILD_NAME
+        );
+        console.log(`Guild: ${channel?.guild.name}`);
     });
 
     // Login to Discord with your client's token
