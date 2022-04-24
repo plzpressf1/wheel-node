@@ -10,6 +10,7 @@ class Wheel {
         this.angle = 0;
         this.isRolling = false;
         this.items = [];
+        this.bannedItems = [];
     }
 
     getCurrentItem() {
@@ -32,6 +33,7 @@ class Wheel {
         const res = await fetch(url);
         const json = await res.json();
         this.items = json.games;
+        this.bannedItems = [];
     }
 
     update() {
@@ -55,6 +57,29 @@ class Wheel {
         this.decelerationRatio = 0.989;
         this.angle = -10 + Math.floor(Math.random() * 20);
         this.noDecelerationTicks = 500 + Math.floor(Math.random() * 200);
+    }
+
+    findItemById(items, id) {
+        for (const item of items) {
+            if (item.id === id) return true;
+        }
+        return false;
+    }
+
+    banItem(item) {
+        if (!this.findItemById(this.bannedItems, item.id)) {
+            this.bannedItems.push(item);
+        }
+    }
+
+    unbanItem(item) {
+        const newBannedItems = [];
+        for (const bannedItem of this.bannedItems) {
+            if (bannedItem.id !== item.id) {
+                newBannedItems.push(bannedItem);
+            }
+        }
+        this.bannedItems = newBannedItems;
     }
 }
 
@@ -116,12 +141,11 @@ class Room {
         return true;
     }
 
-
     changeWheelFilter(filter) {
         this.resetPlayers();
         this.wheel.fetchItems(filter).then(() => {
             this.emitToAll("wheel/filter", filter);
-            this.emitToAll("wheel/setup", this.wheel.items);
+            this.sendWheelSetup();
         });
     }
 
@@ -151,10 +175,39 @@ class Room {
         this.emitToAll("wheel/rolling", true);
     }
 
+    banItem(item) {
+        this.wheel.banItem(item);
+        this.sendWheelSetup();
+    }
+
+    unbanItem(item) {
+        this.wheel.unbanItem(item);
+        this.sendWheelSetup();
+    }
+
     emitToAll(path, data) {
         for (const player of this.players.values()) {
             player.socket.emit(path, data);
         }
+    }
+
+    sendWheelSetup() {
+        let totalWeights = 0;
+        const items = [];
+        for (const item of this.wheel.items) {
+            if (!this.wheel.findItemById(this.wheel.bannedItems, item.id)) {
+                items.push(item);
+                totalWeights += item.weight;
+            }
+        }
+        for (const item of items) {
+            item.probability = item.weight / totalWeights;
+        }
+
+        this.emitToAll("wheel/setup", {
+            items,
+            bannedItems: this.wheel.bannedItems,
+        });
     }
 
     sendPlayersList() {
@@ -238,6 +291,14 @@ export function SetupWS(io) {
 
         socket.on("wheel/spin", () => {
             socket.userData?.room.spinWheel();
+        });
+
+        socket.on("games/ban", (item) => {
+            socket.userData?.room.banItem(item);
+        });
+
+        socket.on("games/unban", (item) => {
+            socket.userData?.room.unbanItem(item);
         });
     });
 }

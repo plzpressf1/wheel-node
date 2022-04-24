@@ -50,6 +50,9 @@ export function GetWheelResultMessage(wheel) {
     let message = "Колесо прокручено:\n";
     let isFirst = true;
     for (const item of wheel.items) {
+        if (wheel.findItemById(wheel.bannedItems, item.id)) {
+            continue;
+        }
         if (isFirst) {
             isFirst = false;
         }
@@ -57,7 +60,7 @@ export function GetWheelResultMessage(wheel) {
             message += "\n";
         }
         message += item.name;
-        if (currentItem.name === item.name) {
+        if (currentItem.id === item.id) {
             message += " <-";
         }
     }
