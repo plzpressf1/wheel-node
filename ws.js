@@ -9,6 +9,7 @@ class Wheel {
     constructor() {
         this.angle = 0;
         this.isRolling = false;
+        this.filter = "";
         this.items = [];
         this.bannedItems = [];
     }
@@ -33,6 +34,7 @@ class Wheel {
         const url = `${api}/wheel.php?action=get_wheel&filter=${filter}`;
         const res = await fetch(url);
         const json = await res.json();
+        this.filter = filter;
         this.items = json.games;
         this.bannedItems = [];
     }
@@ -131,6 +133,11 @@ class Room {
         if (this.registeredPlayers.includes(player.id)) {
             this.players.set(player.id, new Player(player, socket));
             this.sendPlayersList();
+            socket.emit("wheel/setup", {
+                filter: this.wheel.filter,
+                items: this.wheel.items,
+                bannedItems: this.wheel.bannedItems,
+            });
         }
         else {
             // guests available?
@@ -216,6 +223,7 @@ class Room {
 
     sendWheelSetup() {
         this.emitToAll("wheel/setup", {
+            filter: this.wheel.filter,
             items: this.wheel.items,
             bannedItems: this.wheel.bannedItems,
         });
