@@ -64,5 +64,6 @@ export function GetWheelResultMessage(wheel) {
             message += " <-";
         }
     }
+    message += "\n-----------------------";
     return message;
 }
