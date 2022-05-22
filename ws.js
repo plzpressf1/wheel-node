@@ -59,7 +59,7 @@ class Wheel {
         this.speed = 0.08;
         this.decelerationRatio = 0.989;
         this.angle = -10 + Math.floor(Math.random() * 20);
-        this.noDecelerationTicks = 500 + Math.floor(Math.random() * 200);
+        this.noDecelerationTicks = 300 + Math.floor(Math.random() * 200);
     }
 
     findItemById(items, id) {
