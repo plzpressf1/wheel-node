@@ -127,6 +127,7 @@ class Room {
 
     updateRegisteredPlayers(registeredPlayers) {
         this.registeredPlayers = registeredPlayers;
+        this.sendPlayersList();
     }
 
     connectPlayer(player, socket) {
@@ -324,4 +325,11 @@ export function SetupWS(io) {
             socket.userData?.room.unbanItem(item);
         });
     });
+}
+
+export function UpdateRegisteredPlayers(roomId, registeredPlayers) {
+    const roomInstance = rooms.get(roomId);
+    if (roomInstance) {
+        roomInstance.updateRegisteredPlayers(registeredPlayers);
+    }
 }

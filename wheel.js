@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import { UpdateRegisteredPlayers } from "./ws.js";
 
 const api = process.env.REMOTE_ENDPOINT + "/scripts";
 
@@ -42,7 +43,12 @@ export async function GetRoomMessage(id) {
 
 export async function AddRoomPlayer(id, player) {
     const url = `${api}/rooms.php?action=add_player&id=${id}&player=${player}`;
-    await fetch(url);
+
+    const res = await fetch(url);
+    const json = await res.json();
+    const registeredPlayers = json.players;
+
+    UpdateRegisteredPlayers(id, registeredPlayers);
 }
 
 export function GetWheelResultMessage(wheel) {
